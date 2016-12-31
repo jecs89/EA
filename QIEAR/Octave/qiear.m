@@ -13,12 +13,13 @@
 
 function [ bestV bestF ] = qiear()
 	tic;
+	figure; hold on;
 	% printf( 'Quantum Algorithm with Real Codification\n')
 	% t=cputime;
 	p = params();
 
 	Q_t = Q_Generation( p );
-	% myprint('Q_t',Q_t);
+	myprint('Q_t',Q_t);
 
 	% f_t = zeros(p(1),1);
 	% f_t1 = zeros(p(1),1);
@@ -27,7 +28,12 @@ function [ bestV bestF ] = qiear()
 	% best_f = zeros(p(7),1);
 	% best_values = zeros(p(7),p(2));
  
- 	best_global = inf;
+ 	if( p(5) == 2) %% minimization
+ 		best_global = inf;
+ 	elseif( p(5) == 1) % maximization
+ 		best_global = -inf;
+ 	end
+
  	t = 1;
 
  	C_t = zeros( p(9) , p(2) );
@@ -81,6 +87,8 @@ function [ bestV bestF ] = qiear()
 			C_t = E_t;
 		end
 
+		%C_t
+
 		%Updatings waves
 		prop_mod = rand;
 
@@ -88,16 +96,21 @@ function [ bestV bestF ] = qiear()
 			counter = 0;
 
 			%%Comparison between(C_t) and best_global of last pop
-            for i = 1 : p(9)
-                if( f_t(i) < best_global )
-                    counter++;
-                end
-                % for j = 1 : p(9)
-                % 	if( f_t1(i) > f_t(j) )
-                % 		counter++;
-                % 	end
-                % end
-            end
+			if( p(5) == 2 )
+	            for i = 1 : p(9)
+	                if( f_t(i) < best_global )
+	                    counter++;
+	                end
+	                
+	            end
+	        elseif ( p(5) == 1 )
+	        	for j = 1 : p(9)
+	               	if( f_t(j) > best_global )
+	               		counter++;
+	               	end
+	            end
+	        end
+
 
             my_phi = counter / p(9);
             factor_mult = 0;
@@ -125,34 +138,73 @@ function [ bestV bestF ] = qiear()
 		if( t > 1 && mod( t , p(12) ) == 0 ) 
             lambda = 0.5;
             f_t1 = f_t;
-            
-            for i=1:p(1)
-                
-                [val idx] = min(f_t1);
-                f_t1(idx) = inf;
 
-               	j = 1; k = 1;
-               	
-               	while( j <= p(2)*2 )
-                    Q_t(i,j) = Q_t(i,j) + lambda * ( C_t(idx,k) - Q_t(i,j) ) ;
-                    j = j+2;
-                    k++;
-                end
-            end
+            if( p(5) == 2 )
+            
+	            for i=1:p(1)
+	                
+	                % [tmpval tmpidx] = min(f_t1);
+	                % f_t1(tmpidx) = inf;
+
+	                [val idx] = min(f_t1);
+	                f_t1(idx) = inf;
+
+	                % if( abs(tmpval - val ) < 3 )
+	                % 	[val idx] = min(f_t1);
+	                % 	f_t1(idx) = inf;
+	                % end
+
+	               	j = 1; k = 1;
+	               	
+	               	while( j <= p(2)*2 )
+	                    Q_t(i,j) = Q_t(i,j) + lambda * ( C_t(idx,k) - Q_t(i,j) ) ;
+	                    j = j+2;
+	                    k++;
+	                end
+	            end
+	        elseif ( p(5) == 1 )
+	        	for i=1:p(1)
+	                
+	                [val idx] = max(f_t1);
+	                f_t1(idx) = -inf;
+
+	               	j = 1; k = 1;
+	               	
+	               	while( j <= p(2)*2 )
+	                    Q_t(i,j) = Q_t(i,j) + lambda * ( C_t(idx,k) - Q_t(i,j) ) ;
+	                    j = j+2;
+	                    k++;
+	                end
+	            end
+	        end
         end
 
 		% myprint('Q_t',Q_t);
 
 		% f_t = Eval( C_t , p );
-		[val idx] = min(f_t);
+	        	
+        if( p(5) == 2 )
+			[val idx] = min(f_t);
+	    elseif ( p(5) == 1 )
+	    	[val idx] = max(f_t);
+	    end
 
-		if( val < best_global )
-			best_global = val;
-		end
+
+	    if( p(5) == 2 )
+			if( val < best_global )
+				best_global = val;
+			end
+	    elseif ( p(5) == 1 )
+	    	if( val > best_global )
+				best_global = val;
+			end
+	    end
+
+	    % best_global
 
 		% [ C_t(idx,:) best_global ]
 
-		% best_global
+		plot(t,best_global);
 
 		t++;
 	end
@@ -160,7 +212,15 @@ function [ bestV bestF ] = qiear()
 	% myprint('C_t',C_t);
 
 	f_t = Eval( C_t , p );
-	min(f_t)
+	if( p(5) == 2 )
+		[bestF idx] = min(f_t);
+	elseif( p(5) == 1 )
+		[bestF idx] = max(f_t);
+	end
+
+	bestV = C_t(idx);
+
+	myprint('Q_t',Q_t);
 
 	toc;
 endfunction
@@ -172,10 +232,14 @@ function p = params()
 
 	p = [];
 
-	%%Parameters (1) Q_pop_size, (2) variables, (3) min_dom, (4) max_dom, (5) operation, (6) n_worst, 
+	%%Parameters (1) Q_pop_size, (2) variables, (3) min_dom, (4) max_dom, (5) operation 1 min - 2 max, (6) n_worst, 
 	%%(7) T, (8) phi, (9) C_pop_size, (10) function, p(11) update freq
-	p(1) = 5; p(2) = 100; p(3) = -32; p(4) = 32; p(5) = 2; p(6) = 0.2*p(1); p(7) = 75; p(8) = 0.82; p(9) = 100;
-	p(10) = 1; p(11) = 0.66; p(12) = 1;
+	p(1) = 5; p(2) = 10; p(3) = -32; p(4) = 32; p(5) = 2; p(6) = 0.2*p(1); p(7) = 50; p(8) = 0.82; p(9) =500;
+	p(10) = 4; p(11) = 0.66; p(12) = 1;
+
+	if( p(10) == 1 )
+		printf('ACkley\n');
+	end
 
 endfunction
 
@@ -191,7 +255,7 @@ function Q_t = Q_Generation( p )
 	%%Filling matrix Q with sigma and mu
 	for i=1:Q_pop_size
 		if (i == 1)
-				Q_actual(i,1) = -max_dom + pulso_ancho/2 * i; 
+				Q_actual(i,1) = min_dom + pulso_ancho/2 * i; 
 			else
 				Q_actual(i,1) = Q_actual(i-1,1) + pulso_ancho;
 		end
@@ -239,6 +303,12 @@ function C_t = C_Generation(p, Q_t)
 		q++;
 		i = i + nq;
 	end
+
+	%% Check how to set less 0.5 floor and greater 0. ceil
+	% for i=1:p(9)
+	% 	if ( Xij(i,j) - )
+	% 	Xij = floor( Xij );
+	% end
 
 	% printf( 'Xij: ');
 	% Xij'
