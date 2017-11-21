@@ -77,15 +77,15 @@ int NE = 0;
 
 void qiear_thread( vector<double>& p ){
 
-	vector<vector<double>> domains(p[1],vector<double>(2));
+	// vector<vector<double>> domains(p[1],vector<double>(2));
 
-	for( int i = 0; i < domains.size(); i++){
-        domains[i][0] = 10;
-        domains[i][1] = 50;
+	// for( int i = 0; i < domains.size(); i++){
+ //        domains[i][0] = -100;
+ //        domains[i][1] = 100;
 
-    }
+ //    }
 
-    set_domain(domains);
+ //    set_domain(domains);
 
 	time_t timer = time(0); 
 
@@ -255,7 +255,11 @@ int main(int argc, char *argv[]){
 	global_opt = atoi(argv[7]);
     iter_max = p[6];
 	
-	qiear_thread( p );
+	for( double p_7=0.0; p_7 < 1.0; p_7+=0.01 ){
+		cout << p_7 << endl;
+		p[7]=p_7;
+		qiear_thread( p );
+	}
 
 
 

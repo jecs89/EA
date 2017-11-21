@@ -127,12 +127,14 @@ void write_vector2csvfile(vector<double>& best_F, ofstream& file, vector<double>
 	file << "\n";
 }
 
-vector<vector<double>> domain_limits(30,vector<double>(2));
+double nro_dim = 30; 
 
-void set_domain(){
+vector<vector<double>> domain_limits(nro_dim,vector<double>(2));
+
+void set_domain( vector<vector<double>> domains  ){
     for( int i = 0; i < domain_limits.size(); i++){
-        domain_limits[i][0] = -30;
-        domain_limits[i][1] = 30;
+        domain_limits[i][0] = domains[i][0];
+        domain_limits[i][1] = domains[i][1];
 
     }
 }
@@ -145,9 +147,9 @@ void Q_generation( vector<double>& p, vector< vector<double> >& Q_t){
 
     if( p[13] == 0 ){
 
-        for( int d = 0; d < domain_limits.size(); d++){
-            p[3] = domain_limits[d][1];
-            p[2] = domain_limits[d][0];
+        // for( int d = 0; d < domain_limits.size(); d++){
+        //     p[3] = domain_limits[d][1];
+        //     p[2] = domain_limits[d][0];
 
             double pulso_ancho = ( p[3] - p[2] ) / 1;
 
@@ -163,15 +165,15 @@ void Q_generation( vector<double>& p, vector< vector<double> >& Q_t){
                 }
             }
 
-        }
+        // }
 
     }
 
     else if( p[13] == 1 ){
-        for( int d = 0; d < domain_limits.size(); d++){
-            p[3] = domain_limits[d][1];
-            p[2] = domain_limits[d][0];
-            
+        // for( int d = 0; d < domain_limits.size(); d++){
+        //     p[3] = domain_limits[d][1];
+        //     p[2] = domain_limits[d][0];
+
             // Domain splitted
         	double pulso_ancho = ( p[3] - p[2] ) / p[0];
 
@@ -193,7 +195,7 @@ void Q_generation( vector<double>& p, vector< vector<double> >& Q_t){
         		}
         	}
 
-        }
+        // }
     }
 
 	Q_t = Q_actual;
